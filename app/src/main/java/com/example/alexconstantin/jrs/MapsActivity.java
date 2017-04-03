@@ -192,22 +192,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.addMarker(markerOptions);
     }
 
-    public String readTextFile() throws FileNotFoundException {
-        String json = null;
-        try {
-            InputStream is = getAssets().open("objectives.json");
-            int size = is.available();
-            byte[] buffer = new byte[size];
-            is.read(buffer);
-            is.close();
-            json = new String(buffer, "UTF-8");
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            return null;
-        }
-        return json;
-    }
-
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 

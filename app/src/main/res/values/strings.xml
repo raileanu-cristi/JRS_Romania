@@ -1,11 +1,14 @@
 <resources>
     <string name="app_name">JRS</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">Hartă</string>
     <string name="search">Search</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_main">JRS România</string>
 
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
 
     <string name="action_settings">Settings</string>
+    <string name="title_activity_choose_objective_type">Filtrare obiective</string>
+    <string name="pref_header_general">Tipuri de obiective</string>
+
 </resources>
