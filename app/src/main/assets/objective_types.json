@@ -1,0 +1,56 @@
+{
+  "objectiveTypes": [
+    {
+      "id": 1,
+      "name": "Birouri imigrari",
+      "iconClass": "fa fa-institution"
+    },
+    {
+      "id": 2,
+      "name": "Servicii socio-medicale",
+      "iconClass": "fa fa-h-square"
+    },
+    {
+      "id": 3,
+      "name": "Servicii gratuite ONG",
+      "iconClass": "fa fa-gg-circle"
+    },
+    {
+      "id": 4,
+      "name": "Locatii divertisment",
+      "iconClass": "fa fa-universal-access"
+    },
+    {
+      "id": 5,
+      "name": "Atractii turistice",
+      "iconClass": "fa fa-archive"
+    },
+    {
+      "id": 6,
+      "name": "Altele",
+      "iconClass": "fa fa-bell-o"
+    },
+    {
+      "id": 7,
+      "name": "Others",
+      "iconClass": "fa fa-bell-o"
+    },
+    {
+      "id": 8,
+      "name": "Autres",
+      "iconClass": "fa fa-bell-o"
+    },
+    {
+      "id": 9,
+      "name": "الآخرين",
+      "iconClass": "fa fa-bell-o"
+    },
+    {
+      "id": 10,
+      "name": "其他",
+      "iconClass": "fa fa-bell-o"
+    }
+  ],
+  "isError": false,
+  "messages": []
+}

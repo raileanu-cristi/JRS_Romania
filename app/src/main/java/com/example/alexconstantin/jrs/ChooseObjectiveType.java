@@ -13,6 +13,8 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceScreen;
 import android.preference.SwitchPreference;
 import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
@@ -26,6 +28,10 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
@@ -148,7 +154,48 @@ public class ChooseObjectiveType extends AppCompatPreferenceActivity {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
-            
+
+
+
+            PreferenceScreen preferenceScreen = this.getPreferenceScreen();
+
+
+            String myjson="{"
+                    + "  \"objectives\": ["
+                    + "    {"
+                    + "      \"id\": \"1\","
+                    + "      \"name\": \"Julie Sherman\","
+                    + "      \"gender\" : \"female\","
+                    + "      \"latitude\" : \"37.33774833333334\","
+                    + "      \"longitude\" : \"-121.88670166666667\""
+                    + "    },"
+                    + "    {"
+                    + "      \"id\": \"2\","
+                    + "      \"name\": \"Johnny Depp\","
+                    + "      \"gender\" : \"male\","
+                    + "      \"latitude\" : \"32\","
+                    + "      \"longitude\" : \"88\""
+                    + "    }"
+                    + "  ]"
+                    + "}";
+
+            //afisare obiective
+            JSONObject obj = null;
+            try {
+                obj = new JSONObject(myjson);
+                JSONArray objectives=obj.getJSONArray("objectives");
+                for(int i=0;i<objectives.length();i++)
+                {
+                    final JSONObject objective = objectives.getJSONObject(i);
+                    String title=objective.getString("name");
+                    SwitchPreference preference = new SwitchPreference(preferenceScreen.getContext());
+                    preference.setTitle(title);
+                    preference.setDefaultValue(true);
+                    preferenceScreen.addPreference(preference);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
             // Bind the summaries of EditText/List/Dialog/Ringtone preferences
             // to their values. When their values change, their summaries are
