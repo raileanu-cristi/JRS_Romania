@@ -21,6 +21,7 @@ import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,6 +34,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,6 +53,7 @@ public class ChooseObjectiveType extends AppCompatPreferenceActivity {
      * A preference value change listener that updates the preference's summary
      * to reflect its new value.
      */
+
     private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
@@ -149,47 +152,30 @@ public class ChooseObjectiveType extends AppCompatPreferenceActivity {
 
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
     public static class GeneralPreferenceFragment extends PreferenceFragment {
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
             addPreferencesFromResource(R.xml.pref_general);
             setHasOptionsMenu(true);
 
-
-
             PreferenceScreen preferenceScreen = this.getPreferenceScreen();
 
-
-            String myjson="{"
-                    + "  \"objectives\": ["
-                    + "    {"
-                    + "      \"id\": \"1\","
-                    + "      \"name\": \"Julie Sherman\","
-                    + "      \"gender\" : \"female\","
-                    + "      \"latitude\" : \"37.33774833333334\","
-                    + "      \"longitude\" : \"-121.88670166666667\""
-                    + "    },"
-                    + "    {"
-                    + "      \"id\": \"2\","
-                    + "      \"name\": \"Johnny Depp\","
-                    + "      \"gender\" : \"male\","
-                    + "      \"latitude\" : \"32\","
-                    + "      \"longitude\" : \"88\""
-                    + "    }"
-                    + "  ]"
-                    + "}";
+            APIClass APIObject=new APIClass();
+            String myjson=APIObject.getCategories();
 
             //afisare obiective
             JSONObject obj = null;
             try {
                 obj = new JSONObject(myjson);
-                JSONArray objectives=obj.getJSONArray("objectives");
-                for(int i=0;i<objectives.length();i++)
+                JSONArray categories=obj.getJSONArray("categories");
+                for(int i=0;i<categories.length();i++)
                 {
-                    final JSONObject objective = objectives.getJSONObject(i);
-                    String title=objective.getString("name");
+                    final JSONObject objective = categories.getJSONObject(i);
+                    String category_title=objective.getString("name");
+                    int category_id=objective.getInt("id");
                     SwitchPreference preference = new SwitchPreference(preferenceScreen.getContext());
-                    preference.setTitle(title);
+                    preference.setTitle(category_title);
                     preference.setDefaultValue(true);
                     preferenceScreen.addPreference(preference);
                 }
@@ -212,6 +198,8 @@ public class ChooseObjectiveType extends AppCompatPreferenceActivity {
             }
             return super.onOptionsItemSelected(item);
         }
+
+
     }
 
 }

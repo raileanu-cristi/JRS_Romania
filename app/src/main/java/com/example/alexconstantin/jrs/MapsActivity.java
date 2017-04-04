@@ -2,6 +2,7 @@ package com.example.alexconstantin.jrs;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.location.Location;
@@ -10,7 +11,10 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.MenuItem;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -33,8 +37,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback,
+public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener,
         LocationListener {
@@ -57,6 +62,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayHomeAsUpEnabled(true);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+        if (id == android.R.id.home) {
+            startActivity(new Intent(this, MainActivity.class));
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 
@@ -121,29 +139,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onLocationChanged(Location location) {
 
-        String myjson="{"
-                + "  \"objectives\": ["
-                + "    {"
-                + "      \"id\": \"1\","
-                + "      \"name\": \"Julie Sherman\","
-                + "      \"gender\" : \"female\","
-                + "      \"latitude\" : \"37.33774833333334\","
-                + "      \"longitude\" : \"-121.88670166666667\""
-                + "    },"
-                + "    {"
-                + "      \"id\": \"2\","
-                + "      \"name\": \"Johnny Depp\","
-                + "      \"gender\" : \"male\","
-                + "      \"latitude\" : \"32\","
-                + "      \"longitude\" : \"88\""
-                + "    }"
-                + "  ]"
-                + "}";
-
         //afisare obiective
+        APIClass APIObject=new APIClass();
         JSONObject obj = null;
+        int j=0;
         try {
-            obj = new JSONObject(myjson);
+            obj = new JSONObject(APIObject.getObjectives());
             JSONArray objectives=obj.getJSONArray("objectives");
             for(int i=0;i<objectives.length();i++)
             {
