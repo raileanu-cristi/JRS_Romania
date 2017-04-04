@@ -105,6 +105,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             buildGoogleApiClient();
             mMap.setMyLocationEnabled(true);
         }
+
+
     }
 
     protected synchronized void buildGoogleApiClient() {
@@ -138,25 +140,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onLocationChanged(Location location) {
-
-        //afisare obiective
-        APIClass APIObject=new APIClass();
-        JSONObject obj = null;
-        int j=0;
-        try {
-            obj = new JSONObject(APIObject.getObjectives());
-            JSONArray objectives=obj.getJSONArray("objectives");
-            for(int i=0;i<objectives.length();i++)
-            {
-                final JSONObject objective = objectives.getJSONObject(i);
-                double coordx=objective.getDouble("latitude");
-                double coordy=objective.getDouble("longitude");
-                String title=objective.getString("name");
-                createMarker(coordx,coordy,title);
-            }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
         mLastLocation = location;
         if (mCurrLocationMarker != null) {
