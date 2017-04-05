@@ -50,6 +50,10 @@
             android:name=".ChooseObjectiveType"
             android:label="@string/title_activity_choose_objective_types"
             android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".Languages"
+            android:label="@string/title_activity_languages"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>

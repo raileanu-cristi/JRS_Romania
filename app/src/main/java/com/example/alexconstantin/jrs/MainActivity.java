@@ -97,6 +97,10 @@ public class MainActivity extends AppCompatActivity
             Intent objectiveType=new Intent(this,ChooseObjectiveType.class);
             startActivity(objectiveType);
         }
+        else if (id == R.id.nav_language) {
+            Intent languages=new Intent(this,Languages.class);
+            startActivity(languages);
+        }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);

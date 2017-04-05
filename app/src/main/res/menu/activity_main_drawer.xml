@@ -10,6 +10,10 @@
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_objective"
             android:title="Filtrare obiective" />
+        <item
+            android:id="@+id/nav_language"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="Schimbă limba" />
     </group>
 
 </menu>

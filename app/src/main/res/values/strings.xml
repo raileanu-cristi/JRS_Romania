@@ -12,5 +12,6 @@
     <string name="pref_header_general">Tipuri de obiective</string>
     <string name="title_activity_choose_objective_types">Tipuri de obiective</string>
     <string name="title_activity_objectives">Objectives</string>
+    <string name="title_activity_languages">Languages</string>
 
 </resources>
