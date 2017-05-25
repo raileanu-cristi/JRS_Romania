@@ -324,8 +324,8 @@ public class MainActivity extends AppCompatActivity
         @Override
         protected void onPostExecute(Void result) {
             super.onPostExecute(result);
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item, spinnerArray);
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.simple_spinner_dropdown_item, spinnerArray);
+            adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item);
             languagesView.setAdapter(adapter);
 
             if (sharedpreferences.getString("languageId", "") == "") {

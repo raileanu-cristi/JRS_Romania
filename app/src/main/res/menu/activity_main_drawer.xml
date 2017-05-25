@@ -8,7 +8,6 @@
 
     <item
         android:id="@+id/navigation_language"
-        android:title=""
-        app:actionLayout="@layout/spinner" />
+        app:actionLayout="@layout/spinner"/>
 
 </menu>
