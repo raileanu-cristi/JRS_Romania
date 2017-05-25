@@ -69,7 +69,7 @@ public class ChooseObjectiveType extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
 
             // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall(url);
+            String jsonStr = sh.makeServiceCall(url, null);
 
             Log.e(TAG, "Response from url: " + jsonStr);
 

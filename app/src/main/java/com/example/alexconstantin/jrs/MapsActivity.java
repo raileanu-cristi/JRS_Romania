@@ -62,7 +62,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     // URL to get contacts JSON
     private static String url = "http://www.jrsdr.robertoderesu.com/api/objectives";
-
     ArrayList<HashMap<String, String>> objectiveList;
 
     @Override
@@ -90,12 +89,6 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            // Showing progress dialog
-            pDialog = new ProgressDialog(MapsActivity.this);
-            pDialog.setMessage("Please wait...");
-            pDialog.setCancelable(false);
-            pDialog.show();
-
         }
 
         @Override
@@ -103,7 +96,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             HttpHandler sh = new HttpHandler();
 
             // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall(url);
+            String jsonStr = sh.makeServiceCall(url, null);
 
             Log.e(TAG, "Response from url: " + jsonStr);
 
@@ -232,8 +225,8 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     public void onConnected(Bundle bundle) {
 
         mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(1000);
-        mLocationRequest.setFastestInterval(1000);
+        mLocationRequest.setInterval(30000);
+        mLocationRequest.setFastestInterval(30000);
         mLocationRequest.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)

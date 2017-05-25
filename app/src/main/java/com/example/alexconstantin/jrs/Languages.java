@@ -52,7 +52,7 @@ public class Languages extends AppCompatActivity {
         new GetLanguages().execute();
     }
 
-    private class GetLanguages extends AsyncTask<Void, Void, Void> {
+    public class GetLanguages extends AsyncTask<Void, Void, Void> {
 
         @Override
         protected void onPreExecute() {
@@ -70,7 +70,7 @@ public class Languages extends AppCompatActivity {
             HttpHandler sh = new HttpHandler();
 
             // Making a request to url and getting response
-            String jsonStr = sh.makeServiceCall(url);
+            String jsonStr = sh.makeServiceCall(url, null);
 
             Log.e(TAG, "Response from url: " + jsonStr);
 

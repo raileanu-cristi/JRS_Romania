@@ -1,16 +1,25 @@
 package com.example.alexconstantin.jrs;
 
+import android.content.ContentValues;
 import android.util.Log;
+
+import com.google.gson.Gson;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import java.net.URL;
+import java.net.URLEncoder;
+import java.util.Map;
 
 /**
  * Created by Ravi Tamada on 01/09/16.
@@ -23,13 +32,34 @@ public class HttpHandler {
     public HttpHandler() {
     }
 
-    public String makeServiceCall(String reqUrl) {
+    public String makeServiceCall(String reqUrl, Object obj) {
+        Gson gson = new Gson();
+        String postData = gson.toJson(obj);
+
         String response = null;
         try {
             URL url = new URL(reqUrl);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection)url.openConnection();
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept","*/*");
             conn.setRequestMethod("POST");
+
+            conn.setDoOutput(true);
+            conn.setChunkedStreamingMode(0);
+
+           //String postData = "{'filteredTypes': [0],'xLeftTop': 0,'yLeftTop': 0,'xRightBottom': 0,'yRightBottom': 0}";
+
+            OutputStream os = conn.getOutputStream();
+            BufferedWriter writer = new BufferedWriter(
+                    new OutputStreamWriter(os, "UTF-8"));
+            writer.write(postData);
+            writer.flush();
+            writer.close();
+            os.close();
+
             // read the response
+             int responseCode = conn.getResponseCode();
+
             InputStream in = new BufferedInputStream(conn.getInputStream());
             response = convertStreamToString(in);
         } catch (MalformedURLException e) {
@@ -64,4 +94,5 @@ public class HttpHandler {
         }
         return sb.toString();
     }
+
 }

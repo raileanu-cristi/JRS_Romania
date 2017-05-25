@@ -53,7 +53,8 @@
         <activity
             android:name=".Languages"
             android:label="@string/title_activity_languages"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".ObjectiveActivity"></activity>
     </application>
 
 </manifest>

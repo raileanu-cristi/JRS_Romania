@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="20dp"
+    tools:context="com.example.alexconstantin.jrs.ObjectiveActivity">
+
+    <TextView
+        android:id="@+id/objectiveTitle"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Title"
+        android:textStyle="bold"
+        android:textColor="#000000"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:layout_weight="1"
+        />
+
+    <TextView
+        android:id="@+id/objectiveType"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:text="Objective Type"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:textColor="#8E4585"
+        android:layout_below="@+id/objectiveTitle"
+        android:layout_weight="1"
+        />
+
+    <TextView
+        android:id="@+id/objectiveDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_below="@+id/objectiveType"
+        android:layout_weight="1"
+        />
+
+    <TextView
+        android:id="@+id/objectiveHTML"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/objectiveDescription"
+        android:layout_weight="1"
+        />
+
+</RelativeLayout>
