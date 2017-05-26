@@ -33,9 +33,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/google_maps_key" />
 
-        <activity
-            android:name=".MapsActivity"
-            android:label="@string/title_activity_maps" />
+
         <activity
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
@@ -46,14 +44,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ChooseObjectiveType"
-            android:label="@string/title_activity_choose_objective_types"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity
-            android:name=".Languages"
-            android:label="@string/title_activity_languages"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity android:name=".ObjectiveActivity"></activity>
     </application>
 

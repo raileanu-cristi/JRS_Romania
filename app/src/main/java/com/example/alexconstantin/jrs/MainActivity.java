@@ -1,48 +1,39 @@
 package com.example.alexconstantin.jrs;
 
 import android.Manifest;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
-import android.view.SubMenu;
-import android.view.View;
 import android.support.design.widget.NavigationView;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.SimpleAdapter;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesClient;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -63,16 +54,17 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import android.content.Context;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener,
         OnMapReadyCallback,
         GoogleApiClient.ConnectionCallbacks,
         com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener,
-        com.google.android.gms.location.LocationListener {
+        com.google.android.gms.location.LocationListener,
+        DialogInterface.OnClickListener
+{
 
-    public static final String MyPREFERENCES = "MyPrefs" ;
+    public static final String MyPREFERENCES = "MyPrefs";
     SharedPreferences sharedpreferences;
 
     private static Context context;
@@ -85,7 +77,7 @@ public class MainActivity extends AppCompatActivity
     private Spinner languagesView;
     NavigationView navigationView;
     String[] spinnerArray;
-    HashMap<Integer,String> spinnerMap = new HashMap<Integer, String>();
+    HashMap<Integer, String> spinnerMap = new HashMap<>();
     Integer[] objectiveTypesIdArray;
     String[] objectiveTypesNameArray;
     Menu menu;
@@ -99,18 +91,22 @@ public class MainActivity extends AppCompatActivity
     LocationRequest mLocationRequest;
     GoogleApiClient mGoogleApiClient;
     Location mLastLocation;
-    Marker mCurrLocationMarker;
+
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
+        // initialize the layout
         super.onCreate(savedInstanceState);
         context = getApplicationContext();
         setContentView(R.layout.activity_main);
 
-        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
-
+        // set up the toolbar
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        // initialize shared preferences
+        sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -126,33 +122,86 @@ public class MainActivity extends AppCompatActivity
         chooseObjectiveType = new GetObjectiveTypes();
         getObjectives = new GetObjectives();
 
+        if (!device_connected())
+        {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setPositiveButton("Ok", this);
+            alertDialogBuilder.setMessage("Please connect to the internet and restart the app");
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
+            return;
+        }
+        if (!location_enabled())
+        {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setPositiveButton("Ok", this);
+            alertDialogBuilder.setMessage("Please enable your location and restart the app");
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
+            return;
+        }
+
         getLanguages.execute();
         chooseObjectiveType.execute();
 
-        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
     }
 
+
+    private boolean device_connected()
+    {
+        boolean connected;
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED)
+        {
+            //we are connected to a network
+            connected = true;
+        } else
+            connected = false;
+        return connected;
+    }
+
+
+    private boolean location_enabled()
+    {
+        LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+        boolean gps_enabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+
+        return gps_enabled;
+    }
+
     @Override
-    public void onBackPressed() {
+    public void onBackPressed()
+    {
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
+        if (drawer.isDrawerOpen(GravityCompat.START))
+        {
             drawer.closeDrawer(GravityCompat.START);
-        } else {
+        } else
+        {
             super.onBackPressed();
         }
     }
 
+
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
+
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
@@ -163,20 +212,22 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
+
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(MenuItem item)
+    {
         // Handle navigation view item clicks here.
-
-        int id = item.getItemId();
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
 
+
     @Override
-    public void onMapReady(GoogleMap googleMap) {
+    public void onMapReady(GoogleMap googleMap)
+    {
         mMap = googleMap;
 
         getObjectives.execute();
@@ -184,8 +235,9 @@ public class MainActivity extends AppCompatActivity
         mMap.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
         {
             @Override
-            public boolean onMarkerClick(Marker arg0) {
-              //  Toast.makeText(MainActivity.this, arg0.getTitle(), Toast.LENGTH_SHORT).show();// display toast
+            public boolean onMarkerClick(Marker arg0)
+            {
+                //  Toast.makeText(MainActivity.this, arg0.getTitle(), Toast.LENGTH_SHORT).show();// display toast
                 Integer objectiveId = Integer.parseInt(arg0.getSnippet());
                 String objectiveTitle = "";
                 String objectiveType = "";
@@ -211,8 +263,8 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(42.5963,26.1743));
-        CameraUpdate zoom=CameraUpdateFactory.zoomTo(2);
+        CameraUpdate center = CameraUpdateFactory.newLatLng(new LatLng(42.5963, 26.1743));
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(2);
         mMap.moveCamera(center);
         mMap.animateCamera(zoom);
 
@@ -240,12 +292,16 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-    }
 
     @Override
-    public void onConnected(Bundle bundle) {
+    public void onConnectionFailed(ConnectionResult connectionResult)
+    {
+    }
+
+
+    @Override
+    public void onConnected(Bundle bundle)
+    {
         mLocationRequest = new LocationRequest();
 /*        mLocationRequest.setInterval(30000);
         mLocationRequest.setFastestInterval(30000);*/
@@ -261,29 +317,46 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     @Override
-    public void onConnectionSuspended(int i) {
+    public void onConnectionSuspended(int i)
+    {
 
     }
 
-    class GetLanguages extends AsyncTask<Void, Void, Void> {
+
+    @Override   // from alert dialog
+    public void onClick(DialogInterface dialog, int which)
+    {
+        finishAffinity();
+    }
+
+
+    class GetLanguages extends AsyncTask<Void, Void, Void>
+    {
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             super.onPreExecute();
         }
 
+
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(Void... arg0)
+        {
             HttpHandler sh = new HttpHandler();
             String jsonStr = sh.makeServiceCall(languagesUrl, null);
 
-            if (jsonStr != null) {
-                try {
+            if (jsonStr != null)
+            {
+                try
+                {
                     JSONObject jsonObj = new JSONObject(jsonStr);
                     JSONArray contacts = jsonObj.getJSONArray("languages");
                     spinnerArray = new String[contacts.length()];
-                    for (int i = 0; i < contacts.length(); i++) {
+                    for (int i = 0; i < contacts.length(); i++)
+                    {
                         JSONObject c = contacts.getJSONObject(i);
 
                         String id = c.getString("id");
@@ -292,11 +365,14 @@ public class MainActivity extends AppCompatActivity
                         spinnerMap.put(i, id);
                         spinnerArray[i] = name;
                     }
-                } catch (final JSONException e) {
+                } catch (final JSONException e)
+                {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
-                    runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable()
+                    {
                         @Override
-                        public void run() {
+                        public void run()
+                        {
                             Toast.makeText(getApplicationContext(),
                                     "Json parsing error: " + e.getMessage(),
                                     Toast.LENGTH_LONG)
@@ -305,11 +381,14 @@ public class MainActivity extends AppCompatActivity
                     });
 
                 }
-            } else {
+            } else
+            {
                 Log.e(TAG, "Couldn't get json from server.");
-                runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         Toast.makeText(getApplicationContext(),
                                 "Couldn't get json from server. Check LogCat for possible errors!",
                                 Toast.LENGTH_LONG)
@@ -321,33 +400,47 @@ public class MainActivity extends AppCompatActivity
             return null;
         }
 
+
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Void result)
+        {
             super.onPostExecute(result);
-            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, R.layout.simple_spinner_dropdown_item, spinnerArray);
+
+
+            ArrayAdapter<String> adapter = new ArrayAdapter<>(context, R.layout.simple_spinner_dropdown_item, spinnerArray);
             adapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item);
             languagesView.setAdapter(adapter);
 
-            if (sharedpreferences.getString("languageId", "") == "") {
+            if (sharedpreferences.getString("languageId", "") == "")
+            {
                 SharedPreferences.Editor editor = sharedpreferences.edit();
                 editor.putString("languageId", spinnerMap.get(0));
                 editor.commit();
                 languagesView.setSelection(0);
-            } else {
+            } else
+            {
                 Integer languageId = Integer.parseInt(sharedpreferences.getString("languageId", ""));
-                for (HashMap.Entry<Integer, String> entry : spinnerMap.entrySet()) {
-                    if (entry.getValue() == languageId.toString()) {
+                for (HashMap.Entry<Integer, String> entry : spinnerMap.entrySet())
+                {
+                    if (entry.getValue() == languageId.toString())
+                    {
                         languagesView.setSelection(entry.getKey());
                         break;
                     }
                 }
             }
-            languagesView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            languagesView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener()
+            {
                 Boolean first = true;
+
+
                 @Override
-                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
-                    for (HashMap.Entry<Integer, String> entry : spinnerMap.entrySet()) {
-                        if (entry.getKey() == position) {
+                public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id)
+                {
+                    for (HashMap.Entry<Integer, String> entry : spinnerMap.entrySet())
+                    {
+                        if (entry.getKey() == position)
+                        {
                             //code here
                             String languageId = entry.getValue();
                             SharedPreferences.Editor editor = sharedpreferences.edit();
@@ -356,10 +449,11 @@ public class MainActivity extends AppCompatActivity
                             break;
                         }
                     }
-                    if (first == true) {
+                    if (first == true)
+                    {
                         first = false;
-                    }
-                    else {
+                    } else
+                    {
                         Intent i = getBaseContext().getPackageManager()
                                 .getLaunchIntentForPackage(getBaseContext().getPackageName());
                         i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -367,8 +461,11 @@ public class MainActivity extends AppCompatActivity
                     }
 
                 }
+
+
                 @Override
-                public void onNothingSelected(AdapterView<?> parentView) {
+                public void onNothingSelected(AdapterView<?> parentView)
+                {
                     // your code here
                 }
             });
@@ -376,22 +473,25 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    class GetObjectiveTypes extends AsyncTask<Void, Void, Void> {
+    class GetObjectiveTypes extends AsyncTask<Void, Void, Void>
+    {
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             super.onPreExecute();
         }
 
+
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(Void... arg0)
+        {
             HttpHandler sh = new HttpHandler();
             Integer languageId = 1;
             try
             {
                 languageId = Integer.parseInt(sharedpreferences.getString("languageId", ""));
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
 
             }
@@ -401,14 +501,17 @@ public class MainActivity extends AppCompatActivity
 
             Log.e(TAG, "Response from url: " + jsonStr);
 
-            if (jsonStr != null) {
-                try {
+            if (jsonStr != null)
+            {
+                try
+                {
                     JSONObject jsonObj = new JSONObject(jsonStr);
                     JSONArray objectiveTypes = jsonObj.getJSONArray("objectiveTypes");
                     objectiveTypesIdArray = new Integer[objectiveTypes.length()];
                     objectiveTypesNameArray = new String[objectiveTypes.length()];
 
-                    for (int i = 0; i < objectiveTypes.length(); i++) {
+                    for (int i = 0; i < objectiveTypes.length(); i++)
+                    {
                         JSONObject c = objectiveTypes.getJSONObject(i);
 
                         String id = c.getString("id");
@@ -417,11 +520,14 @@ public class MainActivity extends AppCompatActivity
                         objectiveTypesNameArray[i] = name;
                     }
 
-                } catch (final JSONException e) {
+                } catch (final JSONException e)
+                {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
-                    runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable()
+                    {
                         @Override
-                        public void run() {
+                        public void run()
+                        {
                             Toast.makeText(getApplicationContext(),
                                     "Json parsing error: " + e.getMessage(),
                                     Toast.LENGTH_LONG)
@@ -430,11 +536,14 @@ public class MainActivity extends AppCompatActivity
                     });
 
                 }
-            } else {
+            } else
+            {
                 Log.e(TAG, "Couldn't get json from server.");
-                runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         Toast.makeText(getApplicationContext(),
                                 "Couldn't get json from server. Check LogCat for possible errors!",
                                 Toast.LENGTH_LONG)
@@ -447,20 +556,27 @@ public class MainActivity extends AppCompatActivity
             return null;
         }
 
+
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Void result)
+        {
             super.onPostExecute(result);
 
-            for (int i = 0; i < objectiveTypesIdArray.length; i++) {
+            for (int i = 0; i < objectiveTypesIdArray.length; i++)
+            {
                 CheckBox checkBox = new CheckBox(context);
                 checkBox.setChecked(true);
                 checkBox.setId(objectiveTypesIdArray[i]);
 
-                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        CheckBox myCheckBox = (CheckBox)buttonView;
-                        for (int i = 0; i < objectives.length; i++) {
-                            if (objectives[i].getTypeId() == myCheckBox.getId()) {
+                checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener()
+                {
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+                    {
+                        CheckBox myCheckBox = (CheckBox) buttonView;
+                        for (int i = 0; i < objectives.length; i++)
+                        {
+                            if (objectives[i].getTypeId() == myCheckBox.getId())
+                            {
                                 objectives[i].getMarker().setVisible(isChecked);
                             }
                         }
@@ -473,22 +589,25 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    class GetObjectives extends AsyncTask<Void, Void, Void> {
+    class GetObjectives extends AsyncTask<Void, Void, Void>
+    {
 
         @Override
-        protected void onPreExecute() {
+        protected void onPreExecute()
+        {
             super.onPreExecute();
         }
 
+
         @Override
-        protected Void doInBackground(Void... arg0) {
+        protected Void doInBackground(Void... arg0)
+        {
             HttpHandler sh = new HttpHandler();
             Integer languageId = 1;
             try
             {
                 languageId = Integer.parseInt(sharedpreferences.getString("languageId", ""));
-            }
-            catch (Exception e)
+            } catch (Exception e)
             {
 
             }
@@ -499,7 +618,25 @@ public class MainActivity extends AppCompatActivity
             request.setyRightBottom(1000.0);
             request.setLanguageId(languageId);
 
-            List<Integer> res = new ArrayList<Integer>();;
+            List<Integer> res = new ArrayList<Integer>();
+
+            if (objectiveTypesIdArray == null)
+            {
+                Log.e(TAG, "Json parsing error: objectiveTypesIdArray == null ");
+                runOnUiThread(new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        Toast.makeText(getApplicationContext(),
+                                "Error Ocured. Please Connect to the internet and restart the app",
+                                Toast.LENGTH_LONG)
+                                .show();
+                    }
+                });
+                return null;
+            }
+
             for (int i = 0; i < objectiveTypesIdArray.length; i++)
             {
                 res.add(objectiveTypesIdArray[i]);
@@ -508,15 +645,18 @@ public class MainActivity extends AppCompatActivity
 
             String jsonStr = sh.makeServiceCall(objectivesUrl, request);
 
-            if (jsonStr != null) {
-                try {
+            if (jsonStr != null)
+            {
+                try
+                {
                     JSONObject jsonObj = new JSONObject(jsonStr);
 
                     // Getting JSON Array node
                     JSONArray objectivesArray = jsonObj.getJSONArray("objectives");
                     objectives = new Obiectiv[objectivesArray.length()];
                     // looping through All Contacts
-                    for (int i = 0; i < objectivesArray.length(); i++) {
+                    for (int i = 0; i < objectivesArray.length(); i++)
+                    {
                         JSONObject c = objectivesArray.getJSONObject(i);
                         Obiectiv obj = new Obiectiv();
 
@@ -524,12 +664,12 @@ public class MainActivity extends AppCompatActivity
                         String name = c.getString("name");
 
                         JSONObject location = c.getJSONObject("location");
-                        double coordx=location.getDouble("x");
-                        double coordy=location.getDouble("y");
+                        double coordx = location.getDouble("x");
+                        double coordy = location.getDouble("y");
 
                         JSONObject type = c.getJSONObject("type");
-                        String typeId=type.getString("id");
-                        String typeName=type.getString("name");
+                        String typeId = type.getString("id");
+                        String typeName = type.getString("name");
 
                         obj.setId(Integer.parseInt(id));
                         obj.setName(name);
@@ -539,11 +679,14 @@ public class MainActivity extends AppCompatActivity
                         obj.setY(coordy);
                         objectives[i] = obj;
                     }
-                } catch (final JSONException e) {
+                } catch (final JSONException e)
+                {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
-                    runOnUiThread(new Runnable() {
+                    runOnUiThread(new Runnable()
+                    {
                         @Override
-                        public void run() {
+                        public void run()
+                        {
                             Toast.makeText(getApplicationContext(),
                                     "Json parsing error: " + e.getMessage(),
                                     Toast.LENGTH_LONG)
@@ -552,11 +695,14 @@ public class MainActivity extends AppCompatActivity
                     });
 
                 }
-            } else {
+            } else
+            {
                 Log.e(TAG, "Couldn't get json from server.");
-                runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable()
+                {
                     @Override
-                    public void run() {
+                    public void run()
+                    {
                         Toast.makeText(getApplicationContext(),
                                 "Couldn't get json from server. Check LogCat for possible errors!",
                                 Toast.LENGTH_LONG)
@@ -568,17 +714,21 @@ public class MainActivity extends AppCompatActivity
             return null;
         }
 
+
         @Override
-        protected void onPostExecute(Void result) {
+        protected void onPostExecute(Void result)
+        {
             super.onPostExecute(result);
-            for (int i = 0; i < objectives.length; i++) {
+            for (int i = 0; i < objectives.length; i++)
+            {
                 objectives[i].setMarker(createMarker(objectives[i].getX(), objectives[i].getY(), objectives[i].getName(), String.valueOf(objectives[i].getId())));
             }
         }
 
     }
 
-    public Marker createMarker(double latitude,double longitude, String title, String id)
+
+    public Marker createMarker(double latitude, double longitude, String title, String id)
     {
         LatLng latLng = new LatLng(latitude, longitude);
         MarkerOptions markerOptions = new MarkerOptions();
@@ -590,22 +740,22 @@ public class MainActivity extends AppCompatActivity
         return newMarker;
     }
 
+
     //
     @Override
     public void onLocationChanged(Location location)
     {
 
         mLastLocation = location;
-        if (mCurrLocationMarker != null)
-        {
-            mCurrLocationMarker.remove();
-        }
 
-/*        LatLng latLng = new LatLng(44.431819,26.101456);
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+        //move map camera
         mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(11))*/;
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(11));
 
     }
+
 
     private void checkLocationPermission()
     {
@@ -650,6 +800,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     protected synchronized void buildGoogleApiClient()
     {
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -659,6 +810,7 @@ public class MainActivity extends AppCompatActivity
                 .build();
         mGoogleApiClient.connect();
     }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
